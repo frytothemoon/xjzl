@@ -1,0 +1,289 @@
+/* CSS Document */
+@charset "utf-8";
+.modal {
+	color: #353535;
+}
+.w600 {
+    width: 600px!important;
+}
+.accommodationList,.rejectList {
+	display: inline-block;
+	width: 800px;
+}
+.approvalList {
+    margin-bottom: -60px;
+    padding-top: 30px;
+	width: 920px;
+}
+.accommodationList .setting {
+	display: inline-block;
+}
+.accommodationList .setting:hover {
+	text-decoration: underline;
+}
+.accommodationList .ico_setting {
+    height: 16px;
+}
+#accommodationModal .modal-body {
+    padding: 10px;
+}
+#accommodationModal .modal-footer {
+    padding: 5px 10px 15px;
+}
+#accommodationModal .modal-content {
+	background: #F4F4F4;
+}
+#accommodationModal .modal-footer {
+    border-top: 1px solid #F4F4F4;
+}
+#accommodationModal .panel {
+    background: #FFFFFF;
+}
+.acc_list {
+	padding: 20px 20px 5px 20px;
+}
+.acc_list:empty {
+	padding-bottom: 20px;
+}
+.acc_list:empty:after {
+	content: "尚未添加通融人员";
+}
+.acc_list li,
+.acc_list_show li,
+.reject_list_show li {
+	display: inline-block;
+	vertical-align: top;
+	height: 28px;
+	margin-bottom: 15px;
+}
+.reject_list_show li {
+	padding-left:10px;
+	padding-right:10px;
+	height: 52px;
+	border: 1px solid #3D8EF6;
+	color: #3D8EF6;
+	cursor: pointer;
+}
+.approval_list_show li {
+	padding-left:0;
+	padding-right:0;
+	width: 160px;
+	height: 84px;
+	border: 2px solid #3D8EF6;
+	border-radius: 2px;
+	color: #3D8EF6;
+	cursor: pointer;
+}
+.reject_list_show li:hover,
+.reject_list_show li.on,
+.approval_list_show li.on {
+	background: #3D8EF6;
+	color: #FFF;
+}
+.acc_list li+li:before,
+.acc_list_show li+li:before,
+.reject_list_show li+li:before,
+.approval_list_show li+li:before {
+	content: "";
+	width: 50px;
+	height: 28px;
+	float: left;
+	background: url("../images/apply/arrow.png") no-repeat right;
+}
+.approval_list_show li+li:before {
+	width: 90px;
+	background: url(../images/approval/arrow2.png) no-repeat right;
+}
+.reject_list_show li + li.rejection:before {
+	content: none;
+}
+.reject_list_show li+li {
+	margin-left: 52px;
+}
+.approval_list_show li+li {
+	margin-left: 92px;
+    margin-bottom: 92px;
+}
+.reject_list_show li+li:before {
+	height: 52px;
+	margin-left: -62px;
+}
+.approval_list_show li+li:before {
+	height: 86px;
+	margin-left: -92px;
+}
+.acc_list_show li span,
+.acc_list li span,
+.acc_list li a,
+.reject_list_show li span {
+	height: 28px;
+	float: left;
+	background: #F6F7F9;
+	line-height: 28px;
+	border-radius: 3px;
+}
+.approval_list_show li span  {
+	padding-top: 14px;
+}
+.approval_list_show li:first-child span,
+.approval_list_show li:last-child span {
+	height: 84px;
+	line-height: 84px;
+	padding-top: 0;
+}
+.reject_list_show li span {
+	display: block;
+	text-align: center;
+	float: none;
+	background: transparent;
+	padding: 0;
+	font-size: 16px;
+}
+.approval_list_show li span, 
+.approval_list_show li em {
+	display: block;
+	text-align: center;
+	float: none;
+	background: transparent;
+	font-size: 18px;
+}
+.approval_list_show li em {
+	font-size: 14px;
+	padding-top: 5px;
+	line-height: 15px;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+.acc_list_show li span,
+.acc_list li span,
+.reject_list_show li span{
+	padding: 0 14px;
+}
+.acc_list li a {
+	width: 28px;
+	color: #B5B4B5;
+	font-size: 24px;
+	margin-left: 2px;
+	text-align: center;
+}
+.mt8 {
+    margin-top: 8px!important;
+}
+.h90 {
+	height: 90px!important;
+}
+.structContainer {
+	height: 300px;background: #F4F4F4;
+}
+.structContainer > li {
+	float: left;
+	height: 300px;background: #FFFFFF;
+	overflow-y: auto;
+}
+.structContainer .st {
+	overflow-x: auto;
+	width: 240px;
+	margin-right: 4px;
+	border-radius: 2px 0 0 2px;
+} 
+.structContainer .ct {
+	width: calc(100% - 245px);
+	border-radius: 0 2px 2px 0;
+}
+.modal .panel {
+    border-radius: 2px;
+}
+
+.eplist {
+	padding: 14px 0;
+	height: 300px;background: #FFFFFF;
+	overflow-y: auto;
+}
+.eplist li,
+.eplist tr {
+	width: 100%;
+}
+.eplist li.on,
+.eplist tr.on{
+	background: url(../images/ck.png) no-repeat 40px 9px;
+}
+.eplist li:hover,
+.eplist tr:hover {
+	background-color: #DDECFA;
+}
+.eplist span,
+.eplist font,
+.eplist em {
+	vertical-align: top;
+	padding: 7px 0;
+	display: inline-block;
+}
+.eplist span {
+	width: 220px;
+	padding-left: 60px;
+}
+.eplist font {
+	width: 145px;
+	padding-left: 10px;
+}
+.eplist em {
+}
+.approval_list_show {
+	overflow: auto;
+}
+.approval_list_show li:nth-child(4n+1):not(:first-child) {
+	position: relative;
+}
+.approval_list_show li:nth-child(4n+1):not(:first-child)::after {
+	content: "";
+	position: absolute;
+	left: 92px;
+	top: -80px;
+    height: 70px;
+    margin-left: -92px;
+    width: 150px;
+    background: url(../images/approval/arrow3.png) no-repeat bottom;
+}
+.approval_list_show li:nth-child(8n):before,
+.approval_list_show li:nth-child(8n-3):before,
+.approval_list_show li:nth-child(8n-2):before,
+.approval_list_show li:nth-child(8n-1):before {
+	transform: scaleX(-1);
+    width: 86px;
+    margin-left: -90px;
+}
+.approval_list_show li:nth-child(8n),
+.approval_list_show li:nth-child(8n+1) {
+	margin-left: 0;	
+}
+.approval_list_show li:nth-child(8n):before,
+.approval_list_show li:nth-child(8n+1):before,
+.approval_list_show li:last-child:not(.fl):before {
+	display: none;
+}
+.taglist span {
+    height: 22px;
+    background-color: #009CF7;
+    display: inline-block;
+    line-height: 22px;
+    padding: 0 10px;
+    border-radius: 100px;
+    margin-right: 8px;
+	color: #FFFFFF;
+    margin-bottom: 2px;
+}
+.taglist span i {
+	color: #FFFFFF;
+    content: "";
+    height: 14px;
+    width: 12px;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 13px;
+    margin-left: 4px;
+    text-align: center;
+}
+.taglist span i:hover {
+    cursor: pointer;
+}

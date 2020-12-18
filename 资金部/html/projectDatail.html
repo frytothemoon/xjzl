@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>详情页</title>
+    <link href="../favicon.ico" rdel="icon" />
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../css/common.css" />
+    <link rel="stylesheet" type="text/css" href="../css/pictureView.css">
+    <link rel="stylesheet" type="text/css" href="../css/modal.css" />
+    <link rel="stylesheet" type="text/css" href="../css/cancelAccount.css">
+    <link rel="stylesheet" type="text/css" href="../css/apply_project.css" />
+    <link href="../css/jquery.validator.css" rel="stylesheet" type="text/css" />
+    <script src="../js/jquery-1.11.1.min.js"></script>
+    <script src="../js/bootstrap.js"></script>
+    <script type="text/javascript" src="../js/vue.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.validator.js"></script>
+    <script src="../js/jquery-validate.min.js"></script>
+    <script type="text/javascript" src="../js/zh_CN.js"></script>
+    <script src="../js/jquery-ajax.js"></script>
+    <script src="../js/jsviews.min.js"></script>
+    <script src="../js/base.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+    <script src="../js/loadTmpl.js"></script>
+    <script type="text/javascript" src="../js/popup.js"></script>
+    <script type="text/javascript" src="../js/ajaxfileupload.js"></script>
+    <!-- <script src="../资金部/js/plupload.min.js"></script> -->
+    <script src="../finance_js/projectDetail.js"></script>
+</head>
+
+<body>
+    <div class="iframe" id="projectForm">
+        <div class="panel mb10">
+            <div class="clearfix aline">
+                <div class="col-md-4 column lab-cnt lab120 ">
+                	<a class="btn ml10" style="border: none;" href="javascript:history.back(-1)">返回</a>
+                    <panel class="h4 " style="font-weight: 650;color:black;">{{project.prjName}}</panel>
+                </div>
+                <div class="col-md-4 column lab-cnt lab120">
+                <p style="background-color: rgb(245, 0, 0);color: white;font-size: 18px;width: 90px;height: 30px;text-align: center;"
+                        v-show="state==='待审批'">待审批</p>
+                    <p style="background-color:blue;color: white;font-size: 18px;width: 90px;height: 30px;text-align: center;"
+                        v-show="state==='还款中'">还款中</p>
+                    <p style="background-color:rgb(105, 238, 109);color: white;font-size: 18px;width: 90px;height: 30px;text-align: center;"
+                        class='mb10' v-show="state==='已结清'">已结清</p>
+                </div>
+                <div class="col-md-4 text-left pr24 mb10" v-show="state==='待审批'">
+                    <a class="btn mr10" style="background-color: red;border: none;" data-target='#deleteConfirmBox'
+                        data-toggle="modal">删除筹资项目</a>
+                    <a class="btn mr10" style="background-color: black;border: none;" @click="modify">修改筹资信息</a>
+                    <a class="btn" style="background-color: green;border: none;" data-target='#approveConfirmBox' 
+                    data-toggle="modal" v-show="userRole==='资金总监'">审批确认</a>
+                </div>
+                <div class="col-md-4 text-left pr24 mb10" v-show="state==='还款中'">
+                    <a class="btn mr10" style="background-color: green;border: none;margin-left: 10px;"
+                        data-target="#settleConfirmBox" data-toggle="modal">标记结清</a>
+                </div>
+            </div>
+        </div>
+        <form>
+            <div class="panel mb10">
+                <h2 style="font-weight: 650; color: black;">筹资信息</h2>
+                <div class="group">
+                    <div class="clearfix aline">
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>银行账户</label>
+                            <span class="cnt">{{project.bank}}|{{project.cardNo}}</span>
+                        </div>
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>筹资项目名称</label>
+                            <span class="cnt">{{project.prjName}}</span>
+                        </div>
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>提款金额(元)</label>
+                            <span class="cnt">{{project.amount}}</span>
+                        </div>
+                    </div>
+                    <div class="clearfix aline">
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>提款日期</label>
+                            <span class="cnt">{{project.date}}</span>
+                        </div>
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>利率(%)</label>
+                            <span class="cnt">{{project.rate}}</span>
+                        </div>
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>增信机构</label>
+                            <span class="cnt">{{project.creditAgency}}</span>
+                        </div>
+                    </div>
+                    <div class="clearfix aline">
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>财务顾问费(%)</label>
+                            <span clas="cnt">{{project.adviserFee}}</span>
+                        </div>
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>担保费(%)</label>
+                            <span clas="cnt">{{project.guaranteeFee}}</span>
+                        </div>
+                        <div class="col-xs-4 column lab110 lab-cnt">
+                            <label>保证金(%)</label>
+                            <span clas="cnt">{{project.bondFee}}</span>
+                        </div>
+                    </div>
+                    <div class="clearfix aline">
+                        <div class="col-md-12 column lab110 lab-cnt">
+                            <label class="inputlabel">融资合同</label>
+                            <div pre_type="img" id="contractImg" class="imglist imgWithTxt">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel mb10">
+                <h2 style="font-weight: 650; color: black;">关联项目</h2>
+                <div class="group pieceList">
+                    <table class="table table-list table-bordered">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>主合同号</th>
+                                <th>核心企业</th>
+                                <th>客户名称</th>
+                                <th>剩余租金(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="associatedPrjInfo">
+                            <tr v-for="associatedPrj,index in project.associatedPrjList">
+                                <td>{{index+1}}</td>
+                                <td>{{associatedPrj.contractNo}}</td>
+                                <td>{{associatedPrj.mfrsName}}</td>
+                                <td>{{associatedPrj.princName}}</td>
+                                <td>{{associatedPrj.paidAmount}}</td>
+                            </tr>
+                            <tr>
+                                <th>合计</th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td v-show="project.associatedPrjList!=''">{{sumAmount}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="panel mb10" v-if="state==='待审批'">
+                <h2 style="font-weight: 650; color: black;">还款计划</h2>
+                <div class="btn-list ml10">
+
+                </div>
+                <div class="group pieceList">
+                    <table class="table table-list table-bordered">
+                        <thead>
+                            <tr>
+                                <th>期数</th>
+                                <th>应还款日期</th>
+                                <th>计息天数</th>
+                                <th>应还本金(元)</th>
+                                <th>应还利息(元)</th>
+                                <th>应还本息合计(元)</th>
+                                <th>应还其他费用(元)</th>
+                                <th>本金余额(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repayPlanInfo">
+                            <tr v-for="bill,index in project.tradeBillList">
+                                <td>{{index+1}}</td>
+                                <td>{{bill.repayDate}}</td>
+                                <td>{{bill.interestDays}}</td>
+                                <td>{{bill.curPrincipal}}</td>
+                                <td>{{bill.curInterset}}</td>
+                                <td>{{bill.repayAmount}}</td>
+                                <td>{{bill.ortherFee}}</td>
+                                <td>{{bill.curBalance}}</td>
+                            </tr>
+                            <tr v-show="billSum!=''">
+                                <td>合计</td>
+                                <td></td>
+                                <td></td>
+                                <td>{{billSum.curPrincipal}}</td>
+                                <td>{{billSum.curInterset}}</td>
+                                <td>{{billSum.repayAmount}}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="panel mb10" v-if="state==='还款中'||state==='已结清'">
+                <h2 style="font-weight: 650; color: black;">还款计划</h2>
+                <div class="btn-list ml10">
+
+                </div>
+                <div class="group pieceList">
+                    <table class="table table-list table-bordered">
+                        <thead>
+                            <tr>
+                                <th>期数</th>
+                                <th>应还款日期</th>
+                                <th>计息天数</th>
+                                <th>应还本金(元)</th>
+                                <th>应还利息(元)</th>
+                                <th>应还本息合计(元)</th>
+                                <th>应还其他费用(元)</th>
+                                <th>本金余额(元)</th>
+                                <th>实还金额(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repayPlanInfo">
+                            <tr v-for="bill,index in project.tradeBillList">
+
+                                <td>{{index+1}}</td>
+                                <td>{{bill.repayDate}}</td>
+                                <td>{{bill.interestDays}}</td>
+                                <td>{{bill.curPrincipal}}</td>
+                                <td>{{bill.curInterset}}</td>
+                                <td>{{bill.repayAmount}}</td>
+                                <td>{{bill.ortherFee}}</td>
+                                <td>{{bill.curBalance}}</td>
+                                <td>
+                                    <a href="javascript:" class="btn" v-if='bill.repaidAmount===0&&state==="还款中"' data-toggle="modal"
+                                        data-target='#financeReceipt' @click='billTid(bill)'>还款</a>
+                                    <a href="javascript:" v-if='bill.repaidAmount!=0||state!="还款中"' data-toggle="modal"
+                                        data-target='#bankReceipt' style="text-decoration: underline;"
+                                        @click='showReceiptDetail(bill,index)'>{{bill.repaidAmount}}</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>合计</td>
+                                <td></td>
+                                <td></td>
+                                <td>{{billSum.curPrincipal}}</td>
+                                <td>{{billSum.curInterest}}</td>
+                                <td>{{billSum.repayAmount}}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal fade formModel" id="deleteConfirmBox" tabindex="-1" role="dialog"
+                aria-labelledby="deleteConfirmBox" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h4 class="modal-title">删除筹资项目</h4>
+                        </div>
+                        <div class="modal-body">
+                            是否确认删除本条筹资项目？
+                        </div>
+                        <div class="moadl-footer text-center">
+                            <button type="button" class="btn btn-grey" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn" id="deleteConfirm" @click="cancelPrj">确认</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade formModel" id="approveConfirmBox" tabindex="-1" role="dialog"
+                aria-labelledby="approveConfirmBox" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h4 class="modal-title">审批确认</h4>
+                        </div>
+                        <div class="modal-body">
+                            是否确认审批通过？
+                        </div>
+                        <div class="moadl-footer text-center">
+                            <button type="button" class="btn btn-grey" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn" id="approveConfirm" @click="approvePrj">确认</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade formModel" id="settleConfirmBox" tabindex="-1" role="dialog"
+                aria-labelledby="settleConfirmBox" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h4 class="modal-title">标记结清</h4>
+                        </div>
+                        <div class="modal-body">
+                            确认当前筹资项目已经结清？
+                        </div>
+                        <div class="moadl-footer text-center">
+                            <button type="button" class="btn btn-grey" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn" id="settleConfirm" @click="settlePrj">确认</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+        <div class="modal fade formModel m800" id="bankReceipt" tabindex="-1" role="dialog"
+            aria-labelledby="bankReceipt" aria-hidden="true">
+            <form class="form-horizontal" role="form" id="bankReceiptForm">
+                <div class="modal-dialog" style="width: 1300px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h4 class="modal-title">流水明细</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="pandel mt8">
+                                <table class="table table-list table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>银行账户</th>
+                                            <th>发生时间</th>
+                                            <th>摘要</th>
+                                            <th>收支类型</th>
+                                            <th>金额(元)</th>
+                                            <th>币种</th>
+                                            <th>入账类目</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="receipt,index in this.tradeRecord">
+                                            <td>{{receipt.bank}}|{{receipt.cardNo}}</td>
+                                            <td>{{receipt.tradeDate}}</td>
+                                            <td>{{receipt.summary}}</td>
+                                            <td>{{receipt.type}}</td>
+                                            <td>{{receipt.money}}</td>
+                                            <td>{{receipt.currency}}</td>
+                                            <td>{{receipt.finTypeCode}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>合计</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{repAmountSum}}</td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade formModel m800" id="financeReceipt" tabindex="-1" role="dialog"
+        aria-labelledby="financeReceipt" aria-hidden="true">
+        <form class="form-horizontal" role="form" id="bankReceiptForm">
+            <div class="modal-dialog" style="width: 1300px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="cancel">x</button>
+                        <h4 class="modal-title">财务流水</h4>
+                    </div>
+                    <div class="modal-body">
+                        <table width="100%">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="from-group row form-inline mb10">
+                                            <div class="col-md-4 column">
+                                                <input type="text" placeholder="发生时间" class="form-control"
+                                                    v-model="date">
+                                            </div>
+                                            <div class="col-md-4 column">
+                                                <input type="text" placeholder="摘要" class="form-control"
+                                                    v-model="summary">
+                                            </div>
+                                            <div class="col-md-4 column">
+                                                <input type="text" placeholder="金额" class="form-control"
+                                                    v-model="amount">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-inline">
+                                            <a href="javascript:" id="search" class="btn ml20" @click="search">搜索</a>
+                                            <a href="javascript:" id="reset" class="btn ml10 btn-grey"
+                                                @click="reset">重置</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pandel mt8">
+                            <ul id="receiptList" class="eplist">
+                                <li style="background-color: rgba(82, 96, 105, 1); color: #ffffff;">
+                                    <span style="width: 300px;">
+                                        <input type="checkbox" id="selectAll" @click="selectAll($event)">
+                                        	银行账户
+                                    </span>
+                                    <font>发生时间</font>
+                                    <font>摘要</font>
+                                    <font>收支类型</font>
+                                    <font>金额(元)</font>
+                                    <font>币种</font>
+                                    <font>入账类目</font>
+                                </li>
+                                <li :class="{on:receipt.select}" v-for="receipt,index in receiptFilter"
+                                    @click="select(receipt,index)">
+                                    <span style="width: 300px;">{{receipt.bank}}|{{receipt.cardNo}}</span>
+                                    <font>{{receipt.tradeDate}}</font>
+                                    <font>{{receipt.summary}}</font>
+                                    <font v-show="receipt.type=='in'">收入</font>
+                                    <font v-show="receipt.type=='out'">支出</font>
+                                    <font>{{receipt.money}}</font>
+                                    <font>{{receipt.currency}}</font>
+                                    <font>{{receipt.finTypeCode}}</font>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer text-center">
+                        <button type="button" class="btn" @click="confirm">确定</button>
+                        <button type="button" class="btn btn-grey" data-dismiss="modal" @click="cancel">取消</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+
+
+    <div class="preview-box" id="preview_box">
+        <div class="preview">
+            <ul class="preview-ul" id="preview_ul">
+
+            </ul>
+            <a id="thePiece" class="left carousel-control" href="#carousel-example-generic2" data-slide="prev"> <i></i>
+                <span class="piece"></span>
+            </a> <a id="theNext" class="right carousel-control" href="#carousel-example-generic2" data-slide="next">
+                <i></i><span class="next"></span>
+            </a> <a id="thePiece" class="bottom carousel-control" href="#carousel-example-generic2" data-slide="prev">
+                <span class="btn-amplification" id="btn_amplification"></span> <span class="btn-narrow"
+                    id="btn_narrow"></span> <span class="btn-rota" id="btn_rota"></span>
+            </a>
+        </div>
+        <a id="preview_chi" class="carousel-control preview-chi" href="#carousel-example-generic2" data-slide="prev">
+            <i></i><span class="chi"></span>
+        </a>
+    </div>
+
+</body>
+</html>

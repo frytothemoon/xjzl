@@ -1,0 +1,34 @@
+@charset "utf-8";
+.accountTotal{
+	display: flex;
+}
+.accountTotal .list{
+	flex: 1;
+	background: #FFFFFF;
+	padding:20px;
+	margin-right: 10px;
+	font-size: 18px;
+	color: #7F8896;
+	overflow: hidden;
+	text-align: center;
+	font-weight: bold;
+}
+.accountTotal .list:last-child{margin: 0;}
+.accountTotal .list .num{
+	font-size: 24px;
+	margin-top: 20px;
+	color: #309AF0;
+}
+.accountTotal .list .icon_zs{
+	display: inline-block;
+	margin-left: 10px;
+	width: 18px;
+	height: 18px;
+	margin-top: 4px;
+	vertical-align: top;
+	background: url(../images/z1.png) no-repeat center;
+}
+.accountTotal .list .icon_zs:hover,
+.accountTotal .list .icon_zs:active{
+	background-image: url(../images/z2.png);
+}

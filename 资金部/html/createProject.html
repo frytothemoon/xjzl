@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增</title>
+	<link href="../favicon.ico" rdel="icon" />
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css"/>
+	<link rel="stylesheet" type="text/css" href="../css/common.css"/>
+	<link rel="stylesheet" type="text/css" href="../css/pictureView.css">
+	<link rel="stylesheet" type="text/css" href="../css/modal.css"/>
+	<link rel="stylesheet" type="text/css" href="../css/cancelAccount.css">
+	<link rel="stylesheet" type="text/css" href="../css/apply_project.css"/>
+	<link href="../css/jquery.validator.css" rel="stylesheet" type="text/css" />
+	<link href="../css/css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css" />
+	<script src="../js/jquery-1.11.1.min.js"></script>
+    <script src="../js/bootstrap.js"></script>
+    <script	type="text/javascript" src="../js/vue.min.js"></script>
+    <script	type="text/javascript" src="../js/jquery.validator.js"></script>
+    <script src="../js/jquery-validate.min.js"></script>
+	<script type="text/javascript" src="../js/zh_CN.js"></script>
+	<script type="text/javascript" src="../js/bootstrap-datetimepicker.js"></script>
+	<script src="../js/jquery-ajax.js"></script>
+	<script src="../js/jsviews.min.js"></script>
+	<script src="../js/base.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script src="../js/loadTmpl.js"></script>
+	<script type="text/javascript" src="../js/popup.js"></script>
+	<script type="text/javascript" src="../js/ajaxfileupload.js"></script>
+	<script src="../js/plupload.min.js"></script>
+    <script src="../finance_js/createProject.js"></script>
+</head>
+
+<body>
+    <div id="project" class="iframe">
+        <form data-validator-option="{theme:'yellow_top'}" id="projectForm">
+            <div class="panel mb10">
+                <h2 style="font-weight: 650; color: black;">筹资信息</h2>
+                <div class="group">
+                    <div class="clearfix aline">
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>银行账户<i> *</i></label>
+                            <div class="cnt">
+                                <div class="dropdown">
+                                    <button type="button" class="btn dropdown-toggle" id="bankAccount"
+                                        data-toggle="dropdown" data-default="请选择">
+                                        <i id="bankAccountI">银行账户</i>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu" aria-labelledby="account" id="bankAccount_ul">
+                                    </ul>
+                                    <input type="text" data-id="" id="bankAccount_ip" data-rule="required">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>筹资项目名称<i> *</i><i id="ied" class="hidden"><br>*该项目名称已存在*</i></label>
+                            <div class="cnt">
+                                <input type="text" placeholder="不可重复，不超过50个字符" class="form-control" id="prjName"
+                                    data-rule="required" v-model="project.prjName" @blur="isExsisted" maxlength="50">
+                            </div>
+                        </div>
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>提款金额(元)<i> *</i></label>
+                            <div class="cnt">
+                                <input type="text" placeholder="0" class="form-control" id="amount"
+                                    data-rule="required;decimalTwoPositive" v-model="project.amount">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix aline">
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>提款日期<i> *</i></label>
+                            <div class="cnt">
+                                <input readonly type="text" class="form-control calender-input"
+                                    id="date" data-rule="required">
+                            </div>
+                        </div>
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>利率(%)<i> *</i></label>
+                            <div class="cnt">
+                                <input type="text" placeholder="0" class="form-control" id="rate"
+                                    data-rule="required;decimalFour;decimalNonnegative2" v-model="project.rate">
+                            </div>
+                        </div>
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>增信机构</label>
+                            <div class="cnt">
+                                <input type="text" placeholder="0" class="form-control" id="credit_agency" v-model="project.creditAgency">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix aline">
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>财务顾问费(%)<i> *</i></label>
+                            <div class="cnt">
+                                <input type="text" placeholder="0" class="form-control" id="adviser_fee"
+                                    data-rule="required;decimalFour;decimalNonnegative2" v-model="project.adviserFee">
+                            </div>
+                        </div>
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>担保费(%)<i> *</i></label>
+                            <div class="cnt">
+                                <input type="text" placeholder="0" class="form-control" id="guarantee_fee"
+                                    data-rule="required;decimalFour;decimalNonnegative2" v-model="project.guaranteeFee">
+                            </div>
+                        </div>
+                        <div class="col-xs-4 column lab150 lab-cnt">
+                            <label>保证金(%)<i> *</i></label>
+                            <div class="cnt">
+                                <input type="text" placeholder="0" class="form-control" id="bond_fee"
+                                    data-rule="required;decimalFour;decimalNonnegative2" v-model="project.bondFee">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix aline">
+                        <div class="col-md-12 column lab120 lab-cnt">
+                            <label class="inputlabel">融资合同</label>
+                            <div pre_type="img" id="img" class="imglist imgWithTxt">
+								<div  class="addimg ma05 edit img" >
+								<i></i>上传<input id="contract" class="upload" type="file" name="materialFile">
+								</div>
+							</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel mb10">
+                <h2 style="font-weight: 650; color: black;">关联项目</h2>
+                <div class="btn-list ml10">
+                    <a href="javascript:" class="btn" id="addPrj" data-toggle="modal" data-target="#prjModel"  @click="restorePrj">选择项目</a>
+                </div>
+                <div class="group pieceList">
+                    <table class="table table-list table-bordered">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>主合同号</th>
+                                <th>核心企业</th>
+                                <th>客户名称</th>
+                                <th>剩余租金(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="associatedPrjInfo">
+                            <tr v-for="project,index in project.associatedPrjList">
+                                <td>{{index+1}}</td>
+                                <td>{{project.contractNo}}</td>
+                                <td>{{project.mfrsName}}</td>
+                                <td>{{project.princName}}</td>
+                                <td>{{project.paidAmount}}</td>
+                            </tr>
+                            <tr>
+                                <th>合计</th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td v-show="project.associatedPrjList!=''">{{residualAmount}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="panel mb10">
+                <h2 style="font-weight: 650; color: black;">还款计划</h2>
+                <div class="btn-list ml10">
+                    <a class="btn" id="downloadTemp" data-toggle="modal" data-target="" href="../zs/finance/exportPlanTemplate">下载模板</a>
+                    <a class="btn" data-toggle="modal" data-target="#selectFileModal">导入还款计划</a>
+                </div>
+                <div class="group pieceList">
+                    <table class="table table-list table-bordered">
+                        <thead>
+                            <tr>
+                                <th>期数</th>
+                                <th>应还款日期</th>
+                                <th>计息天数</th>
+                                <th>应还本金(元)</th>
+                                <th>应还利息(元)</th>
+                                <th>应还本息合计(元)</th>
+                                <th>应还其他费用(元)</th>
+                                <th>本金余额(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repayPlanInfo">
+                            <tr v-for="bill,index in project.tradeBillList">
+                                <td>{{index+1}}</td>
+                                <td>{{bill.repayDate}}</td>
+                                <td>{{bill.interestDays}}</td>
+                                <td>{{bill.curPrincipal}}</td>
+                                <td>{{bill.curInterset}}</td>
+                                <td>{{bill.repayAmount}}</td>
+                                <td>{{bill.ortherFee}}</td>
+                                <td>{{bill.curBalance}}</td>
+                            </tr>
+                            <tr v-show="billSum!=''">
+                            	<td>合计</td>
+                            	<td></td>
+                            	<td></td>
+                            	<td>{{billSum.curPrincipal}}</td>
+                            	<td>{{billSum.curInterset}}</td>
+                            	<td>{{billSum.repayAmount}}</td>
+                            	<td></td>
+                            	<td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="commitText" class="clearfix aline">
+                <div class="mb20 text-center">
+                    <a class="btn long-btn mr10 audit" id="savePrj" data-toggle="modal" data-target="#confirmBox">保存</a>
+                    <a class="btn long-btn mr10 audit" id="cancel"  href="../finance/financeQuery.html">取消</a>
+                </div>
+            </div>
+        </form>
+
+        <div class="modal fade formModel" id="confirmBox" tabindex="-1" role="dialog" aria-labelledby="confirmBox"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title">确认提交</h4>
+                </div>
+                <div class="modal-body">
+                    	是否确认提交
+                </div>
+                <div class="moadl-footer text-center">
+                    <button type="button" class="btn btn-grey" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn" id="prjConfirm" @click="createProject">确认</button>
+                </div>
+            </div>
+        </div>
+       </div>
+    </div>
+    <div class="modal fade formModel m800" id="prjModel" tabindex="-1" role="dialog" aria-labelledby="prjModel"
+        aria-hidden="true">
+        <form class="form-horizontal" role="form" id="prjModelForm" data-validator-option="{theme:'yellow_top'}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="cancel">x</button>
+                        <h4 class="modal-title">选择项目</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-xs-2 column pt8">已选项目</div>
+                            <div class="col-xs-10 column">
+                                <div class="taglist" id="chosenPrj">
+                                    <span v-for="project,index in prjSelected">{{project.contractNo}}<i @click="selectrev(project,index)">×</i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <table width="100%">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="from-group row form-inline mb10">
+                                            <div class="col-md-4 column">
+                                                <input type="text" placeholder="主合同号" class="form-control"
+                                                    id="contractNum_ip" v-model="contractNum">
+                                            </div>
+                                            <div class="col-md-4 column">
+                                                <input type="text" placeholder="核心企业" class="form-control" id="mfrs_ip"
+                                                    v-model="mfrs">
+                                            </div>
+                                            <div class="col-md-4 column">
+                                                <input type="text" placeholder="客户名称" class="form-control"
+                                                    id="client_ip" v-model="client">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-inline">
+                                            <a href="javascript:" id="search" class="btn ml20" @click="searchPrj">搜索</a>
+                                            <a href="javascript:" id="reset" class="btn ml10 btn-grey"
+                                                @click="resetPrj">重置</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="panel mt8">
+                            <ul id="prjList" class="eplist">
+                                <li style="background-color: rgba(82, 96, 105, 1); color: #ffffff;">
+                                    <span>序号</span>
+                                    <font>主合同号</font>
+                                    <font>核心企业</font>
+                                    <font>客户名称</font>
+                                </li>
+                                <li :class="{on:project.select}" v-for="project,index in projectFilter"
+                                    @click="selectPrj(project,index)">
+                                    <span class="on">{{index+1}}</span>
+                                    <font>{{project.contractNo}}</font>
+                                    <font>{{project.mfrsName}}</font>
+                                    <font>{{project.princName}}</font>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer text-center">
+                            <button type="button" class="btn" id="prjModelconFirm" @click="prjConfirm">保存</button>
+                            <button type="button" class="btn btn-grey" data-dismiss="modal" @click="cancel">取消</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal fade formModel" id="selectFileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div id="box">
+                <div class="modal-content content-step1">
+                    <form role="form" id ="validateForm" data-validator-option="{theme:'yellow_top'}">
+                    <div class="modal-header">
+                        <h4 class="modal-title">导入还款计划表</h4>
+                    </div>
+                    <div class="">
+                        <div class="modal-body ">
+                            <p class="text-center confirmTxt h4">请按照标准格式导入</p>
+                            <p class=" confirmTxt ">1、打开下载表，将对应字段信息输入或粘贴进本表。为保障粘贴信息被有效导入，请使用纯文本或数字或日期</p>
+                            <p class=" confirmTxt ">2、信息输入完毕，点击 “导入xls/xlsx文件” 按钮， 选择excel文档</p>
+                            <p class=" confirmTxt ">3、点击 “开始导入” ，导入中如有任何疑问，请联系客服</p>
+                            <p class=" confirmTxt ">4、导入过程可能根据数据量会持续一段时间，请耐心等待</p>
+                            <div class="imglist text-center">
+                                <div class="text-center imgbox hidden file_excel_show" >
+                            		<img src="../images/excel.png"></img>
+                            		<a class="del" data-toggle="modal" data-target="#deleteImg" href="javascript:"><i>×</i></a>
+                            	</div>
+							
+                                <div class="addimg ma05"><i></i>导入excel文件<input class="upload file_excel" type="file" name="xlsFile1" id="xlsFile1">
+                                </div>
+                            </div>
+                            <p class="text-center file_excel_show mb20 hidden resetModel1Txt" id="file_excel_file_path1">文件名文件名</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer text-center">
+                            <button type="button" class="btn btn-grey  btn-cancel resetModel1" data-dismiss="modal" href="javascript:">取消</button>
+                            <button type="button" id="importPlan" class="btn long-btn  btn-next">开始导入</button>
+                    </div>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="uploadLayer ma05" style="display: none;" id="uploadLayer">
+		<div class="upload_header">
+			<h1>正在上传<span id="number"></span></h1>
+			<div class="opr_btn">
+				<div class="uploadLayer_max" id="uploadLayer_max"></div>
+				<div class="uploadLayer_min" id="uploadLayer_min"></div>
+				<div class="uploadLayer_close"></div>
+			</div>
+		</div>
+		<div class="upload_body">
+			<ul>
+				<li>文件名</li>
+				<li>大小</li>
+				<li>进度</li>
+				<li>状态</li>
+			</ul>
+			<div class="filelist" id="filelist">
+			</div>
+		</div>
+	</div>
+	<div class="hidden" id="container">
+	</div>
+	
+	
+    <div class="preview-box" id="preview_box">
+        <div class="preview">
+            <ul class="preview-ul" id="preview_ul">
+
+            </ul>
+            <a id="thePiece" class="left carousel-control" href="#carousel-example-generic2" data-slide="prev"> <i></i>
+                <span class="piece"></span>
+            </a> <a id="theNext" class="right carousel-control" href="#carousel-example-generic2" data-slide="next">
+                <i></i><span class="next"></span>
+            </a> <a id="thePiece" class="bottom carousel-control" href="#carousel-example-generic2" data-slide="prev">
+                <span class="btn-amplification" id="btn_amplification"></span> <span class="btn-narrow"
+                    id="btn_narrow"></span> <span class="btn-rota" id="btn_rota"></span>
+            </a>
+        </div>
+        <a id="preview_chi" class="carousel-control preview-chi" href="#carousel-example-generic2" data-slide="prev">
+            <i></i><span class="chi"></span>
+        </a>
+    </div>
+</body>
+</html>

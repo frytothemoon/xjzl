@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../css/common.css" />
+    <link rel="stylesheet" type="text/css" href="../css/payment_record.css" />
+
+    <script src="../js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="../js/datapacker/js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript" src="../js/datapacker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+
+    <script type="text/javascript" src="../js/vue.min.js"></script>
+    <script type="text/javascript" src="../js/popup.js"></script>
+    <script src="../js/bootstrap.js"></script>
+    <script src="../js/loadTmpl.js"></script>
+    <script src="../js/jquery-ajax.js"></script>
+    <script src="../js/jquery.tableGrid.js"></script>
+    <script src="../js/jsviews.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/base.js"></script>
+    <script src="../finance_js/financeQuery.js"></script>
+
+</head>
+<body>
+    
+    <div class="iframe" id="planDetail">
+        <div id="plan_display">
+            <ul class="accountTotal mb10">
+                <li class="list" data-toggle="modal" data-target="#repaymentPlan" @click="showDetail('curWeek')" style="cursor: pointer;">
+                    <p>本周还款计划<span class="icon_zs" id="curWeekPlan_span"></span></p>
+                    <p class="num" id="curWeekPlan">0</p>
+                </li>
+                <li class="list" data-toggle="modal" data-target="#repaymentPlan" @click="showDetail('nextWeek')" style="cursor: pointer;">
+                    <p>下周还款计划<span class="icon_zs" id="nextWeekPlan_span"></span></p>
+                    <p class="num" id="nextWeekPlan">0</p>
+                </li>
+                <li class="list" data-toggle="modal" data-target="#repaymentPlan" @click="showDetail('curMonth')" style="cursor: pointer;">
+                    <p>本月还款计划<span class="icon_zs" id="curMonthPlan_span"></span></p>
+                    <p class="num" id="curMonthPlan">0</p>
+                </li>
+            </ul>
+            <div id="repaymentPlan" class="modal fade formModel m800" tabindex="-1" role="dialog"
+            aria-labelledby="repaymentPlan" aria-hidden="true">
+            <form class="form-horizontal" role="form" id="planForm">
+                <div class="modal-dialog" style="width: 1300px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h4 class="modal-title">还款计划</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-xs-2 column pt8" v-if="option==='curWeek'">本周还款计划: {{planSum.amountSum}} 元</div>
+                                <div class="col-xs-2 column pt8" v-if="option==='nextWeek'">下周还款计划: {{planSum.amountSum}} 元</div>
+                                <div class="col-xs-2 column pt8" v-if="option==='curMonth'">本月还款计划: {{planSum.amountSum}} 元</div>
+                            </div>
+                            <div class="pandel mt8">
+                                <table class="table table-list table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>序号</th>
+                                            <th>银行账户</th>
+                                            <th>筹资项目名称</th>
+                                            <th>还款期次</th>
+                                            <th>应还日期</th>
+                                            <th>应还本金(元)</th>
+                                            <th>应还利息(元)</th>
+                                            <th>应还本息合计(元)</th>
+                                            <th>其他应还费用(元)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="plan,index in repayPlan" v-if="repayPlan!=''&&repayPlan!=null&&repayPlan!=undefined">
+                                            <td>{{index+1}}</td>
+                                            <td>{{plan.bankAccount}}</td>
+                                            <td>{{plan.projectName}}</td>
+                                            <td>{{plan.curLimit}}</td>
+                                            <td>{{plan.repayDate}}</td>
+                                            <td>{{plan.curPrincipal}}</td>
+                                            <td>{{plan.curInterest}}</td>
+                                            <td>{{plan.repayAmount}}</td>
+                                            <td>{{plan.otherFee}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>合计</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{planSum.principalSum}}</td>
+                                            <td>{{planSum.interestSum}}</td>
+                                            <td>{{planSum.amountSum}}</td>
+                                            <td>{{planSum.otherSum}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer text-center">
+                            <button type="button" class="btn btn-grey" data-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        </div>
+        <form id="frm_search">
+            <div class="panel search-panel2">
+                <div class="panel-body">
+                    <table width="100%">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="from-group row form-inline mb10">
+                                        <div class="col-md-3 column">
+                                            <div class="dropdown">
+                                                <button type="button" class="btn dropdown-toggle" id="bankAccountList"
+                                                    data-toggle="dropdown" data-default="请选择"><i>银行账户</i></button>
+                                                <ul class="dropdown-menu" role="menu" aria-labelledby="bankAccountList"
+                                                    id="bankAccountList_ul">
+
+                                                </ul>
+                                                <input id="bankAccountList_ip" data-id="" type="text">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 column">
+                                            <input readonly onchange="checkdate(1)" placeholder="应还款日期" type="text"
+                                                class="form-control calender-input" id="repayMonth"><span
+                                                class="calender-input-icon"></span>
+                                        </div>
+                                        <div class="col-md-3 column">
+                                            <input type="text" placeholder="筹资项目名称" class="form-control" id="prjName">
+                                        </div>
+                                        <div class="col-md-3 column">
+                                            <div class="dropdown">
+                                                <button type="button" data-default="筹资项目状态" class="btn dropdown-toggle"
+                                                    id="state" data-toggle="dropdown">
+                                                    <i>筹资项目状态</i><span class="caret"></span>
+                                                </button>
+                                                <ul id="stateShow" class="dropdown-menu" role="menu"
+                                                    aria-labelledby="state">
+                                                    <li role='presentation'><a role='menuitem' data-id="1" tabindex='-1'
+                                                            href='#'>待审批</a></li>
+                                                    <li role='presentation'><a role='menuitem' data-id="2" tabindex='-1'
+                                                            href='#'>还款中</a></li>
+                                                    <li role='presentation'><a role='menuitem' data-id="3" tabindex='-1'
+                                                            href='#'>已结清</a></li>
+                                                </ul>
+                                                <input id="state_ip" data-id="" type="text">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="form-inline">
+                                        <a href="javascript:" id="search" class="btn ml20">搜索</a>
+                                        <a href="javascript:" id="reset" class="btn ml10 btn-grey">重置</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="btn-list">
+                <a href="javascript:" class="btn fl" id="createProject">新增</a>
+                <a href="javascript:" class="btn fl" id="export">导出明细</a>
+            </div>
+        </form>
+        <div class="table-scroll-box">
+            <table class="table table-list table-bordered" id="example2">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>银行账户</th>
+                        <th>筹资项目名称</th>
+                        <th>提款金额(元)</th>
+                        <th>提款日期</th>
+                        <th>利率(%)</th>
+                        <th>筹资项目状态</th>
+                        <th>本月应还本金(元)</th>
+                        <th>本月应还利息(元)</th>
+                        <th>本月应还本息合计(元)</th>
+                        <th>本月应还其他费用(元)</th>
+                        <th>累计实还金额(元)</th>
+                        <th>本金余额(元)</th>
+                        <th>利息余额(元)</th>
+                        <th>剩余应还本息合计(元)</th>
+                    </tr>
+                </thead>
+                <tbody id="mycontent"></tbody>
+            </table>
+        </div>
+        <div class="table-info" id="displayPage"></div>
+        
+    </div>
+    <script id="tableContentTmple" type="text/x-jsrender">
+        <tr class="single">
+           <td>{{:#index+1}}</td>
+           <td>{{:bankAccount}}</td>
+           <td>{{:projectName}}</td>
+           <td>{{:amount}}</td>
+           <td>{{:tradeDate}}</td>
+           <td>{{:rate}}</td>
+           <td>{{:tradeState}}</td>
+           <td>{{:curPrincipal}}</td>
+           <td>{{:curInterest}}</td>
+           <td>{{:repayAmount}}</td>
+           <td>{{:otherFee}}</td>
+           <td>{{:repaidAmount}}</td>
+           <td>{{:capBalance}}</td>
+           <td>{{:insBalance}}</td>
+           <td>{{:balanceAmount}}
+            <div class="table-opr-btn">
+                <a class="btn btn-xs btn-tr-check seeSome" tid="{{:tid}}"  href="javascript:void(0);">查看明细</a> 
+            </div>
+           </td> 
+        </tr>
+   </script>
+</body>
+</html>

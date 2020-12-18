@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.zhishi.dal.mapper.finance.FinanceQueryMapper">
+
+	<resultMap type="com.zhishi.bean.finance.FinBank"
+		id="bankAccountMap">
+		<id column="tid" property="tid" />
+		<result column="bank_abbre" property="bankAbbre" />
+		<result column="bank" property="bank" />
+		<result column="open_branch" property="openBranch" />
+		<result column="category" property="category" />
+		<result column="card_no" property="cardNo" />
+		<result column="amount_name" property="amountName" />
+		<result column="action" property="action" />
+		<result column="open_data" property="openData" />
+		<result column="subject_code" property="subjectCode" />
+		<result column="subject_name" property="subjectName" />
+		<result column="balance" property="balance" />
+		<result column="create_by" property="createBy" />
+		<result column="create_date" property="createDate" />
+		<result column="update_by" property="updateBy" />
+		<result column="update_date" property="updateDate" />
+		<result column="remark" property="remark" />
+		<result column="version" property="version" />
+		<result column="state" property="state" />
+	</resultMap>
+
+	<select id="getRoleNameByKey" resultType="java.lang.String"
+		parameterType="java.lang.String">
+		SELECT sr.name
+		FROM `tb_sys_user` su LEFT JOIN
+		`tb_sys_user_role` ur ON su.tid =
+		ur.user_uid
+		LEFT JOIN `tb_sys_role` sr
+		ON sr.tid = ur.role_id
+		WHERE su.tid = #{tid};
+	</select>
+
+	<select id="selectOrderByKey"
+		resultType="com.zhishi.bean.vo.finance.AssociatedPrjVo"
+		parameterType="java.lang.String">
+		SELECT fto.serial_no AS tid,
+		fto.contract_no AS
+		contractNo,
+		fto.mfrs_name AS mfrsName,
+		fto.princ_name AS princName,
+		SUM(rr.paid_amount) AS paidAmount
+		FROM `tb_finace_trade_order` fto LEFT
+		JOIN `tb_biz_corp_repayment_record`
+		rr ON fto.serial_no = rr.serial_no
+		WHERE fto.trade_id = #{tid}
+		GROUP BY fto.tid;
+	</select>
+
+	<select id="getAssociatedProject"
+		resultType="com.zhishi.bean.vo.finance.AssociatedPrjVo"
+		parameterType="java.lang.String">
+		SELECT bo.tid,
+		bo.contract_no AS contractNo,
+		bo.mfrs_name AS mfrsName,
+		bo.princ_name AS princName,
+		SUM(rr.paid_amount) AS paidAmount
+		FROM
+		`tb_biz_order`bo LEFT JOIN `tb_biz_corp_repayment_record` rr ON
+		bo.tid
+		= rr.serial_no
+		WHERE bo.be_mortgage_corp NOT LIKE '%弘高%'
+		AND
+		bo.be_mortgage_corp NOT LIKE '%志远%'
+		AND bo.order_state = '完成审批'
+		AND
+		bo.capital_settled = 0
+		AND bo.tid NOT IN
+		(SELECT serial_no
+		FROM
+		`tb_finace_trade_order` fto
+		<if test="_parameter != null">
+			WHERE fto.trade_id != #{tid}
+		</if>
+		)
+		GROUP BY bo.tid;
+	</select>
+
+	<select id="queryBankAccount" resultMap="bankAccountMap">
+		SELECT DISTINCT *
+		FROM`tb_fin_bank`fb
+		WHERE fb.state != 3
+		ORDER BY fb.bank DESC;
+	</select>
+
+	<select id="getRecordStatement"
+		resultType="com.zhishi.bean.finance.Statement"
+		parameterType="java.lang.String">
+		SELECT SUBSTRING_INDEX(bs.bank,'/',1) AS bank,
+		bs.card_no AS cardNo,
+		bs.trade_date AS tradeDate,
+		bs.summary AS summary,
+		CASE WHEN bs.type='in' THEN '收入' ELSE '支出' END AS TYPE,
+		bs.money AS
+		money,
+		CASE WHEN bs.currency ='RMB' THEN '人民币' ELSE bs.currency END AS
+		currency,
+		bs.fin_type_code AS finTypeCode
+		FROM
+		`tb_bank_statement`bs LEFT
+		JOIN `tb_finace_trade_record` fto ON fto.repaid_flow = bs.tid
+		WHERE
+		fto.plan_id=#{billTid};
+	</select>
+
+
+	<select id="queryFinancePlanThisWeek"
+		resultType="java.math.BigDecimal">
+		SELECT SUM(tb.repay_amount) AS curWeekAmount
+		FROM
+		`tb_finace_trade_bill` tb LEFT JOIN `tb_finace_trade` ft ON
+		tb.trade_id = ft.tid
+		WHERE tb.repay_date<![CDATA[<=]]>DATE_ADD(NOW(),INTERVAL
+		7-WEEKDAY(NOW())-1 DAY) AND
+		tb.repay_date>=DATE_SUB(NOW(),INTERVAL
+		WEEKDAY(NOW()) DAY)
+		AND ft.trade_state = '还款中';
+	</select>
+
+
+	<select id="queryFinancePlanNextWeek"
+		resultType="java.math.BigDecimal">
+		SELECT SUM(tb.repay_amount) AS curMonthAmount
+		FROM
+		`tb_finace_trade_bill` tb LEFT JOIN `tb_finace_trade` ft ON
+		tb.trade_id = ft.tid
+		WHERE
+		YEARWEEK(DATE_FORMAT(tb.repay_date,'%Y-%m-%d')) = YEARWEEK(NOW()) + 1
+		AND ft.trade_state = '还款中';
+	</select>
+
+	<select id="queryFinancePlanThisMonth"
+		resultType="java.math.BigDecimal">
+		SELECT SUM(tb.repay_amount)
+		FROM `tb_finace_trade_bill` tb
+		LEFT JOIN `tb_finace_trade` ft ON
+		tb.trade_id = ft.tid
+		WHERE
+		YEAR(NOW())=YEAR(tb.repay_date)
+		AND MONTH(NOW())=MONTH(tb.repay_date)
+		AND ft.trade_state = '还款中';
+	</select>
+
+	<select id="queryFinanceList" parameterType="java.util.Map"
+		resultType="com.zhishi.bean.vo.finance.FinanceListVo">
+
+		SELECT
+		ft.tid AS tid,
+		CONCAT(fb.bank,'/',fb.card_no) AS bankAccount ,
+		ft.name AS projectName,
+		ft.amount AS amount,
+		ft.trade_date AS tradeDate,
+		ft.rate AS rate,
+		ft.trade_state AS tradeState,
+		SUM(tb.cur_principal) AS
+		curPrincipal,
+		SUM(tb.cur_interset) AS curInterest,
+		SUM(tb.repay_amount)
+		AS repayAmount,
+		SUM(tb.orther_fee) AS otherFee,
+		(SELECT
+		SUM(tbb.repaid_amount)
+		FROM `tb_finace_trade_bill` tbb
+		WHERE
+		tbb.trade_id =ft.tid
+		GROUP BY tbb.trade_id) AS repaidAmount,
+
+		(SELECT
+		tbb.cur_balance
+		FROM(
+		SELECT tid,trade_id,MAX(cur_limit) m FROM
+		`tb_finace_trade_bill` tbb
+		WHERE DATE_FORMAT(tbb.repay_date,'%Y-%m') =
+		DATE_FORMAT(#{repayDate},'%Y-%m')
+		GROUP BY trade_id
+		)t,`tb_finace_trade_bill`tbb
+		WHERE t.m = tbb.cur_limit AND tbb.trade_id
+		= t.trade_id AND t.trade_id =
+		tb.trade_id GROUP BY tbb.trade_id ) AS
+		capBalance,
+
+
+		(SELECT t.CI
+		FROM(SELECT SUM(
+		IF
+		(DATE_FORMAT(tb.repay_date,'%Y-%m') <![CDATA[>]]>
+		DATE_FORMAT(#{repayDate},'%Y-%m'),tb.cur_interset,0)) AS CI,
+		tid,trade_id
+		FROM tb_finace_trade_bill tb
+		GROUP BY tb.trade_id
+		)t LEFT
+		JOIN `tb_finace_trade_bill`tbb ON tbb.trade_id=t.trade_id
+		WHERE
+		t.trade_id = ft.tid
+		GROUP BY tbb.trade_id) AS insBalance,
+
+		IFNULL((SELECT tbb.cur_balance
+		FROM(
+		SELECT tid,trade_id,MAX(cur_limit)
+		m FROM `tb_finace_trade_bill` tbb
+		WHERE
+		DATE_FORMAT(tbb.repay_date,'%Y-%m') =
+		DATE_FORMAT(#{repayDate},'%Y-%m')
+		GROUP BY trade_id
+		)t,`tb_finace_trade_bill`tbb
+		WHERE t.m = tbb.cur_limit AND tbb.trade_id
+		= t.trade_id AND t.trade_id =
+		tb.trade_id GROUP BY tbb.trade_id ), 0) +
+		IFNULL((SELECT t.CI
+		FROM(SELECT SUM(
+		IF
+		(DATE_FORMAT(tb.repay_date,'%Y-%m') <![CDATA[>]]>
+		DATE_FORMAT(#{repayDate},'%Y-%m'),tb.cur_interset,0)) AS CI,
+		tid,trade_id
+		FROM tb_finace_trade_bill tb
+		GROUP BY tb.trade_id
+		)t LEFT
+		JOIN `tb_finace_trade_bill`tbb ON tbb.trade_id=t.trade_id
+		WHERE
+		t.trade_id = ft.tid
+		GROUP BY tbb.trade_id), 0)
+		AS balanceAmount
+
+		FROM
+		tb_finace_trade ft LEFT JOIN tb_finace_trade_bill tb ON ft.tid =
+		tb.trade_id
+		AND DATE_FORMAT(tb.repay_date,'%Y-%m') =
+		DATE_FORMAT(#{repayDate},'%Y-%m')
+		LEFT JOIN tb_fin_bank fb ON
+		ft.bank_id = fb.tid
+
+		<where>
+			<if test="bankId != null">
+				AND ft.bank_id = #{bankId}
+			</if>
+			<if test="finProjectName != null">
+				AND ft.name = #{finProjectName}
+			</if>
+			<if test="tradeState != null">
+				AND ft.trade_state = #{tradeState}
+			</if>
+			AND ft.state != 0
+		</where>
+		GROUP BY ft.name
+		ORDER BY FIELD (ft.trade_state,'待审批','还款中','已结清')
+		ASC,ft.create_date DESC
+		LIMIT #{nextPage},#{pageSize};
+
+	</select>
+
+	<select id="queryPlanCount" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		SELECT COUNT(DISTINCT(ft.tid))
+
+		FROM tb_finace_trade ft LEFT JOIN
+		tb_finace_trade_bill tb ON ft.tid =
+		tb.trade_id
+		AND
+		DATE_FORMAT(tb.repay_date,'%Y-%m') =
+		DATE_FORMAT(#{repayDate},'%Y-%m')
+		<where>
+			<if test="bankId != null">
+				AND ft.bank_id = #{bankId}
+			</if>
+			<if test="finProjectName != null">
+				AND ft.name = #{finProjectName}
+			</if>
+			<if test="tradeState != null">
+				AND ft.trade_state = #{tradeState}
+			</if>
+			AND ft.state != 0
+		</where>
+	</select>
+
+	<select id="queryFinanceDetail"
+		resultType="com.zhishi.bean.vo.finance.FinancePlanDetailVO"
+		parameterType="java.lang.String">
+		SELECT
+		ft.tid AS tid,
+		CONCAT(fb.bank,' | ',fb.card_no) AS bankAccount ,
+		ft.name AS projectName,
+		tb.cur_limit AS curLimit,
+		tb.repay_date AS
+		repayDate,
+		tb.cur_principal AS curPrincipal,
+		tb.cur_interset AS
+		curInterest,
+		tb.repay_amount AS repayAmount,
+		tb.orther_fee AS otherFee
+		FROM tb_finace_trade ft LEFT JOIN tb_finace_trade_bill tb ON ft.tid =
+		tb.trade_id
+		LEFT JOIN tb_fin_bank fb ON ft.bank_id = fb.tid
+		<choose>
+			<when test="_parameter == 'curWeek'">
+				WHERE tb.repay_date<![CDATA[<=]]>DATE_ADD(NOW(),INTERVAL
+				7-WEEKDAY(NOW())-1 DAY)
+				AND tb.repay_date<![CDATA[>=]]>DATE_SUB(NOW(),INTERVAL
+				WEEKDAY(NOW()) DAY)
+			</when>
+			<when test="_parameter == 'nextWeek'">
+				WHERE YEARWEEK(DATE_FORMAT(tb.repay_date,'%Y-%m-%d'))
+				= YEARWEEK(NOW()) +
+				1
+			</when>
+			<when test="_parameter == 'curMonth'">
+				WHERE YEAR(NOW())=YEAR(tb.repay_date)
+				AND
+				MONTH(NOW())=MONTH(tb.repay_date)
+			</when>
+		</choose>
+		AND ft.trade_state = '还款中'
+		ORDER BY ft.tid;
+	</select>
+
+	<select id="queryBankStatement" parameterType="java.lang.String"
+		resultType="com.zhishi.bean.finance.Statement">
+		SELECT
+		bs.tid as tid, 
+		bs.bank_id as bankId,
+		SUBSTRING_INDEX(bs.bank,'/',1) AS bank,
+		bs.card_no AS cardNo,
+		bs.trade_date AS tradeDate,
+		bs.summary AS summary,
+		bs.type AS type,
+		bs.money AS money,
+		bs.money_rmb as moneyRmb,
+		CASE
+		WHEN bs.currency ='RMB' THEN '人民币' ELSE bs.currency END AS currency,
+		bs.fin_type_code AS finTypeCode
+		FROM `tb_bank_statement`bs
+		WHERE bs.tid
+		NOT IN
+		(SELECT repaid_flow
+		FROM `tb_finace_trade_record`)
+		AND bs.bank_id
+		= #{bankId}
+		AND bs.type = 'out'
+		AND bs.fin_type_id
+		='69fb2d76bcd011e988a820040ff3dc48';
+	</select>
+
+	<insert id="orderBatchInsert" parameterType="java.util.List">
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO tb_finace_trade_order
+		(tid, trade_id,
+		serial_no,contract_no, princ_name, mfrs_name,create_by,update_by, remark)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(REPLACE(UUID(),'-',''),#{item.tradeId},#{item.serialNo},#{item.contractNo},
+			#{item.princName},#{item.mfrsName},#{item.createBy},#{item.updateBy},#{item.remark}
+			)
+		</foreach>
+	</insert>
+
+	<insert id="billBatchInsert" parameterType="java.util.List">
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO tb_finace_trade_bill
+		(tid, trade_id, rate, limits,
+		cur_limit, interest_days, repay_date,
+		repay_amount, cur_principal,
+		cur_interset, cur_balance, plan_status, orther_fee,
+		capital_id, capital_name,
+		create_by, update_by, remark)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(REPLACE(UUID(),'-',''), #{item.tradeId}, #{item.rate},
+			#{item.limits}, #{item.curLimit}, #{item.interestDays},
+			#{item.repayDate}, #{item.repayAmount}, #{item.curPrincipal},
+			#{item.curInterset}, #{item.curBalance}, #{item.planStatus}, 
+			<if test="item.ortherFee != null">
+			#{item.ortherFee},
+			</if>
+			<if test="item.ortherFee == null">
+			0,
+			</if>
+			
+			#{item.capitalId}, #{item.capitalName}, #{item.createBy}, #{item.updateBy}, #{item.remark}
+			)
+		</foreach>
+	</insert>
+
+	<insert id="dataBatchInsert" parameterType="java.util.List">
+		<selectKey resultType="java.lang.Integer" keyProperty="id"
+			order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO tb_finace_trade_data
+		(tid, trade_id, data_type, data_category, item_name, url, icon, create_by, update_by, remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(REPLACE(UUID(),'-',''), #{item.tradeId}, #{item.dataType}, #{item.dataCategory}, #{item.itemName},
+			#{item.url},#{item.icon}, #{item.createBy}, #{item.updateBy}, #{item.remark}
+			)
+		</foreach>
+	
+	</insert>
+</mapper>
